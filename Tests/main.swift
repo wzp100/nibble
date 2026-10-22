@@ -403,8 +403,9 @@ runConfigFixtures("config-merge.json")
 section("simplified Chinese localization")
 do {
     expectEqual(localized("common.save"), "保存", "a known key resolves from the bundled zh-Hans table")
+    expectEqual(localized("settings.general"), "通用", "user-preferred zh-Hans still resolves")
     expectEqual(localized("nibble.locale.key.missing"), "nibble.locale.key.missing",
-                "a missing key falls back to the development string")
+                "a missing key falls back to the identifier")
 }
 
 section("menu bar liveness probe")

@@ -87,7 +87,7 @@ final class ButtonsPane: NSObject, NSTableViewDataSource, NSTableViewDelegate {
 
         profilePopup.target = self
         profilePopup.action = #selector(profileChanged)
-        profilePopup.toolTip = "Each profile is its own set of button mappings. Switching one takes effect immediately — the menu bar has the same list."
+        profilePopup.toolTip = localized("buttons.tooltip.profile")
         profilePopup.translatesAutoresizingMaskIntoConstraints = false
         profilePopup.widthAnchor.constraint(equalToConstant: 150).isActive = true
 
@@ -121,12 +121,9 @@ final class ButtonsPane: NSObject, NSTableViewDataSource, NSTableViewDelegate {
         learnButton.action = #selector(toggleLearn)
         learnButton.translatesAutoresizingMaskIntoConstraints = false
 
-        learnButton.toolTip = "Press a physical mouse button and its row is selected. Wheel scrolling isn't a button; the wheel click and tilts are."
-        table.toolTip = "Right-click a row to clear its mapping. G1/G2 (left/right click) can't be remapped so the mouse can never lock you out."
-        helpBadge = nibbleHelpBadge(
-            "Edits are staged, not written as you go — press Save (or Return) to commit them, "
-            + "and the menu bar reloads the remap engine. Right-click a row to clear it. "
-            + "G1/G2 stay untouched so the mouse can never lock you out.")
+        learnButton.toolTip = localized("buttons.tooltip.identify")
+        table.toolTip = localized("buttons.tooltip.table")
+        helpBadge = nibbleHelpBadge(localized("buttons.help.staged"))
         helpBadge.translatesAutoresizingMaskIntoConstraints = false
 
         let editor = makeEditor()
@@ -171,8 +168,8 @@ final class ButtonsPane: NSObject, NSTableViewDataSource, NSTableViewDelegate {
         typeControl.segmentDistribution = .fillProportionally
 
         recorder.onChange = { [weak self] _ in self?.applyEditor() }
-        recorder.toolTip = "Click here, then press the combination you want. Esc clears it."
-        typeControl.toolTip = "Keystroke sends one combination · Macro plays a sequence · System runs a built-in action, app or deeplink · Disable makes the button inert · Default hands it back to the mouse"
+        recorder.toolTip = localized("buttons.tooltip.recorder")
+        typeControl.toolTip = localized("buttons.tooltip.types")
         recorder.translatesAutoresizingMaskIntoConstraints = false
         recorder.heightAnchor.constraint(equalToConstant: 30).isActive = true
 
@@ -180,14 +177,14 @@ final class ButtonsPane: NSObject, NSTableViewDataSource, NSTableViewDelegate {
         macroField.target = self
         macroField.action = #selector(applyEditor)
         macroField.font = .monospacedSystemFont(ofSize: 12, weight: .regular)
-        macroField.toolTip = "Comma-separated steps. Each step is a key combination or a delay (150ms, 1.5s). Max 64 steps, 30s total."
+        macroField.toolTip = localized("buttons.tooltip.macro")
 
         systemPopup.addItems(withTitles: SystemAction.allCases.map(\.rawValue))
         systemPopup.target = self
         systemPopup.action = #selector(applyEditor)
 
         appField.placeholderString = "app name or deeplink"
-        appField.toolTip = "An app name (Safari) launches it. Anything containing :// is opened as a deeplink — raycast://extensions/…, obsidian://…, shortcuts://…"
+        appField.toolTip = localized("buttons.tooltip.app")
         appField.target = self
         appField.action = #selector(appFieldCommitted)
         appField.font = .systemFont(ofSize: 12)

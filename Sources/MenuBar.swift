@@ -474,7 +474,8 @@ final class MenuBarDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                 batteryPercent = b.percent
                 batteryCharging = b.charging
                 let volt = b.millivolts.map { String(format: " · %.2fV", Double($0) / 1000) } ?? ""
-                detailItem.title = "\(b.percent)% · \(b.charging ? localized("common.charging") + " ⚡" : localized("common.discharging"))\(volt)"
+                let state = b.charging ? localized("common.charging") + " ⚡" : localized("common.discharging")
+                detailItem.title = "\(b.percent)% · \(state)\(volt)"
                 statusTooltip = "\(deviceItem.title) · \(b.percent)%\(volt)"
                 applyStatusAppearance()
                 notifyLowBatteryIfNeeded(percent: b.percent, charging: b.charging, device: deviceItem.title,

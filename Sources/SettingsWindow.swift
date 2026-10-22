@@ -86,16 +86,16 @@ final class SettingsDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate,
         batteryLabel.textColor = .secondaryLabelColor
         statusLabel.textColor = .secondaryLabelColor
         statusLabel.font = .systemFont(ofSize: 11)
-        rgbControl.toolTip = "Written to the device immediately. The mouse has no way to report its current effect back, so Nibble shows the last one it applied."
-        rateControl.toolTip = "Higher rates poll more often — smoother tracking, slightly more battery. Writing this requires host mode; Nibble switches automatically."
-        replayCheck.toolTip = "Installs a one-shot launchd agent that runs `nibble apply` at login. It exits immediately after — nothing stays resident."
+        rgbControl.toolTip = localized("settings.tooltip.lighting")
+        rateControl.toolTip = localized("settings.tooltip.rate")
+        replayCheck.toolTip = localized("settings.tooltip.replay")
 
         dpiControl.target = self
         dpiControl.action = #selector(dpiPresetChanged)
         dpiControl.segmentDistribution = .fillEqually
         // 欄位只需容納 5 位數；全寬的輸入框會讓人以為要填長字串
         dpiCustom.placeholderString = "50–25600"
-        dpiCustom.toolTip = "Any value the sensor accepts. A DPI set with the mouse's own buttons shows up here when it isn't one of the presets."
+        dpiCustom.toolTip = localized("settings.tooltip.dpi.custom")
         dpiCustom.target = self
         dpiCustom.action = #selector(dpiCustomCommitted)
         dpiCustom.font = .monospacedDigitSystemFont(ofSize: 12, weight: .regular)
@@ -106,8 +106,7 @@ final class SettingsDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate,
         replayCheck.action = #selector(replayToggled)
         startupCheck.target = self
         startupCheck.action = #selector(startupToggled)
-        startupCheck.toolTip = "Keeps the menu bar running, which is what executes your button remaps. "
-                             + "Without it, a reboot leaves the remaps dead — the login re-apply below only restores DPI, rate and lighting."
+        startupCheck.toolTip = localized("settings.tooltip.startup")
         startupNote.font = .systemFont(ofSize: 11)
         startupNote.textColor = .systemOrange
         startupNote.isHidden = true
@@ -129,7 +128,7 @@ final class SettingsDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate,
         imFix.action = #selector(openInputMonitoringAction)
         axFix.action = #selector(openAccessibilityAction)
         engineFix.action = #selector(startMenuBarAction)
-        engineFix.toolTip = "Launches /Applications/Nibble.app — the menu bar hosts the remap engine."
+        engineFix.toolTip = localized("settings.tooltip.engine")
         rateControl.target = self
         rateControl.action = #selector(rateChanged(_:))
         rgbControl.target = self
@@ -146,8 +145,7 @@ final class SettingsDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate,
         // 一個把裝置設定寫回去。先前只有後者，重開機後按鍵全死卻沒人說得出為什麼。
         let launchRow = NSStackView(views: [
             startupCheck,
-            nibbleHelpBadge("Button remapping only works while the Nibble menu bar is running. "
-                          + "This registers it as a login item so it comes back after a reboot."),
+            nibbleHelpBadge(localized("settings.help.startup")),
             startupNote,
         ])
         launchRow.spacing = 8
@@ -157,9 +155,7 @@ final class SettingsDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate,
         // 不再需要一顆語意跟右下角 Save 撞車的按鈕
         let startupRow = NSStackView(views: [
             replayCheck,
-            nibbleHelpBadge("Everything on this tab is written to the mouse immediately, and lost when it powers "
-                          + "off — the mouse falls back to its onboard profile. With this ticked, whatever you set "
-                          + "here is remembered and re-applied at login; there's nothing to save by hand."),
+            nibbleHelpBadge(localized("settings.help.replay")),
         ])
         startupRow.spacing = 8
         startupRow.alignment = .centerY
@@ -168,24 +164,19 @@ final class SettingsDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate,
         percentLabel.textColor = .secondaryLabelColor
         let notifyRow = NSStackView(views: [
             notifyCheck, notifyField, percentLabel,
-            nibbleHelpBadge("Delivered by the menu bar app, so it needs that running too. "
-                          + "You get one reminder per discharge cycle — plugging in resets it. "
-                          + "The menu bar icon turns red at the same level."),
+            nibbleHelpBadge(localized("settings.help.notify")),
         ])
         notifyRow.spacing = 6
         notifyRow.alignment = .centerY
 
         let statusHeader = nibbleSectionRow(sectionLabel(localized("settings.section.status")),
-            help: "The three things every remap depends on. Input Monitoring lets Nibble read the mouse; "
-                + "Accessibility lets it synthesize your keystrokes; the engine lives in the menu bar app. "
-                + "Permissions are reported for whichever process hosts the engine — `nibble doctor` prints the same checks.")
+            help: localized("settings.help.status"))
 
         let generalStack = NSStackView(views: [
             sectionLabel(localized("settings.section.dpi")), dpiControl, dpiCustomRow,
             sectionLabel(localized("settings.section.rate")), rateControl,
             nibbleSectionRow(sectionLabel(localized("settings.section.lighting")),
-                             help: "Lighting can't be read back from the mouse — Nibble shows the last effect it applied. "
-                                 + "A power cycle returns the mouse to its onboard profile."),
+                             help: localized("settings.help.lighting")),
             rgbControl,
             NSBox(), launchRow, startupRow, notifyRow,
             NSBox(), statusHeader,
@@ -225,7 +216,7 @@ final class SettingsDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate,
         // Enter 直接儲存——但只在 Buttons 分頁（見 syncSaveButton）。預設按鈕會在
         // 第一響應者之前吃掉 Return，在 General 打 DPI 按 Enter 就會變成「送出改鍵」。
         saveButton.isEnabled = false
-        saveButton.toolTip = "Write the pending button changes to the config file. The menu bar reloads the engine after that."
+        saveButton.toolTip = localized("settings.tooltip.save")
         closeButton.target = self
         closeButton.action = #selector(closeAction)
         closeButton.keyEquivalent = "\u{1b}"     // Esc 關窗
@@ -442,9 +433,10 @@ final class SettingsDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate,
             let supported = (try? dev.supportedReportRatesHz()) ?? []
             // 支援清單放 tooltip：它和上面那排按鈕通常一模一樣，常駐顯示只是重複
             if !supported.isEmpty {
-                rateControl.toolTip = "This device supports "
-                    + supported.sorted().map(String.init).joined(separator: " / ") + " Hz. "
-                    + "Writing the rate requires host mode; Nibble switches automatically."
+                rateControl.toolTip = String(
+                    format: localized("settings.tooltip.rate.supported"),
+                    supported.sorted().map(String.init).joined(separator: " / ")
+                )
             }
             showLighting()
             setStatus(localized("common.ready"))
@@ -465,8 +457,9 @@ final class SettingsDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate,
     private func updateBattery(_ dev: HIDPPDevice) {
         guard let b = try? dev.battery() else { return }
         let volt = b.millivolts.map { String(format: " · %.2fV", Double($0) / 1000) } ?? ""
-        batteryLabel.stringValue = "🔋 \(b.percent)%\(volt) · "
-            + (b.charging ? localized("common.charging") : localized("common.discharging"))
+        batteryLabel.stringValue = localizedBatteryLabel(percent: b.percent,
+                                                         voltage: volt,
+                                                         charging: b.charging)
     }
 
     /// 現值若不在級距上（例如滑鼠上的 DPI 鍵調出來的），就顯示在 Custom 欄位而不是假裝選中某一格
@@ -616,7 +609,8 @@ final class SettingsDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate,
         } else {
             let reason = st["reason"] as? String ?? "menu bar has not reported yet"
             // 「沒設定映射」不是故障，只是還沒用到這個功能
-            setHealth(engineValue, ok: reason.contains("no mappings") ? nil : false, reason)
+            setHealth(engineValue, ok: reason.contains("no mappings") ? nil : false,
+                      localizedEngineState(reason))
             engineFix.isHidden = true
         }
 
@@ -686,13 +680,14 @@ final class SettingsDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate,
         do {
             try updateLowBatteryNotify(enabled: on, percent: typed ?? defaultLowBatteryPercent)
             loadPreferences()   // 夾過範圍後把真正生效的值寫回欄位
+            let shownPercent = Int(notifyField.stringValue.trimmingCharacters(in: .whitespaces)) ?? defaultLowBatteryPercent
             // 一次只講一句話：先前警告訊息會被下面那句成功訊息立刻蓋掉，
             // 於是輸入 99 只看得到「已設定 50%」，沒人知道自己打的值被改了
             guard on else { setStatus(localized("settings.status.lowbattery.off")); return }
             setStatus(clamped
                 ? String(format: localized("settings.status.range.only"), lowBatteryRange.lowerBound,
-                         lowBatteryRange.upperBound, notifyField.stringValue)
-                : String(format: localized("settings.status.lowbattery.at"), notifyField.stringValue))
+                         lowBatteryRange.upperBound, shownPercent)
+                : String(format: localized("settings.status.lowbattery.at"), shownPercent))
         } catch {
             setStatus("❌ \(error)", sticky: true)
         }

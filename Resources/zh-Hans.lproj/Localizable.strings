@@ -19,6 +19,7 @@
 "common.breathing" = "呼吸";
 "common.charging" = "充电中";
 "common.discharging" = "放电中";
+"settings.status.lowbattery" = "🔋 %1$d%% · %2$@";
 "common.custom" = "自定义";
 
 /* Settings window */
@@ -68,7 +69,26 @@
 "settings.health.menu.bar.off" = "菜单栏未运行";
 "settings.health.menu.bar.remaps.off" = "菜单栏未运行 — 你的 %1$d 项重映射已停用";
 "settings.health.engine.running" = "运行中 · %1$d 项映射";
+"settings.health.engine.reason.none" = "未配置映射";
+"settings.health.engine.reason.none.for" = "%1$@ 没有映射";
+"settings.health.engine.reason.ax" = "辅助功能权限未授权";
+"settings.health.engine.reason.disconnected" = "设备已断开 — 等待重新连接";
+"settings.health.engine.reason.paused" = "已被用户暂停";
+"settings.health.engine.reason.running" = "运行中";
 "settings.device.notfound" = "未找到 /Applications/Nibble.app — 请运行 `make install-app`";
+"settings.tooltip.lighting" = "会立即写入设备。鼠标无法回报当前灯效，因此 Nibble 显示它最后一次应用的灯效。";
+"settings.tooltip.rate" = "回报率越高轮询越频繁 — 跟踪更顺滑，但略微耗电。写入需要 host 模式；Nibble 会自动切换。";
+"settings.tooltip.replay" = "安装一个一次性 launchd agent，在登录时运行 `nibble apply`。运行后立即退出，不会常驻。";
+"settings.tooltip.dpi.custom" = "传感器接受的任意数值。如果用鼠标自身按键设置的 DPI 不是预设值，会显示在这里。";
+"settings.tooltip.startup" = "让菜单栏保持运行，它负责执行按键重映射。不开启时，重启后重映射不会生效；下方的登录重新应用只会恢复 DPI、回报率和灯光。";
+"settings.tooltip.engine" = "启动 /Applications/Nibble.app — 重映射引擎运行在菜单栏里。";
+"settings.tooltip.save" = "把暂存的按键更改写入配置文件。之后菜单栏会重新加载引擎。";
+"settings.tooltip.rate.supported" = "此设备支持 %1$@ Hz。写入回报率需要 host 模式；Nibble 会自动切换。";
+"settings.help.startup" = "按键重映射只在 Nibble 菜单栏运行时生效。这里会把它注册为登录项，重启后自动恢复。";
+"settings.help.replay" = "此分页的所有设置都会立即写入鼠标，鼠标断电后丢失并回到板载配置。勾选后，这里设置的值会被记住并在登录时重新应用，无需手动保存。";
+"settings.help.notify" = "通知由菜单栏应用发送，所以它也需要保持运行。每个充放电周期只提醒一次 — 插电后会重置。菜单栏图标也会在同一电量变红。";
+"settings.help.status" = "重映射依赖的三项条件。输入监控让 Nibble 读取鼠标；辅助功能让它合成按键；引擎运行在菜单栏应用里。权限会针对承载引擎的进程报告 — `nibble doctor` 检查的是同一组条件。";
+"settings.help.lighting" = "灯光无法从鼠标回读 — Nibble 显示最后一次应用的灯效。鼠标断电后会回到板载配置。";
 
 /* Buttons pane */
 "buttons.identify" = "按下以识别";
@@ -116,6 +136,14 @@
 "buttons.identify.detected.bit" = "检测到 %1$@ · 第 %2$d 位";
 "buttons.identify.detected" = "检测到 %@";
 "buttons.action.system" = "(system)";
+"buttons.tooltip.profile" = "每个配置方案是一组独立的按键映射。切换会立即生效 — 菜单栏显示同一份列表。";
+"buttons.tooltip.identify" = "按下实体鼠标按键即可选中对应行。滚轮滚动不是按键；滚轮按下和左右倾斜是。";
+"buttons.tooltip.table" = "右键点击一行可清除映射。G1/G2（左/右键）不能重映射，避免鼠标被完全锁住。";
+"buttons.help.staged" = "更改会先暂存，不会随编辑立即写入 — 按“保存”（或 Return）提交后，菜单栏会重新加载重映射引擎。右键点击一行可清除映射。G1/G2 保持不变，避免鼠标被完全锁住。";
+"buttons.tooltip.recorder" = "点击这里，然后按下想要的组合键。Esc 可清除。";
+"buttons.tooltip.types" = "按键发送一个组合键 · 宏播放一组步骤 · 系统执行内置操作、应用或 Deeplink · 停用让按键失效 · 默认交还给鼠标处理";
+"buttons.tooltip.macro" = "步骤用逗号分隔。每一步可以是组合键或延迟（150ms、1.5s）。最多 64 步，总计 30 秒。";
+"buttons.tooltip.app" = "输入应用名称（如 Safari）会启动它。包含 :// 的内容会作为 Deeplink 打开 — raycast://extensions/…、obsidian://…、shortcuts://…";
 
 /* Key recorder */
 "key.recorder.press" = "请按下组合键…";
