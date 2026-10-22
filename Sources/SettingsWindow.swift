@@ -43,30 +43,32 @@ func runSettingsUI(initialTab: String? = nil) -> Int32 {
 
 final class SettingsDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, NSTabViewDelegate {
     private var window: NSWindow!
-    private let deviceLabel = NSTextField(labelWithString: "Detecting…")
+    private let deviceLabel = NSTextField(labelWithString: localized("settings.detecting"))
     private let batteryLabel = NSTextField(labelWithString: "")
     // DPI 用與選單列相同的級距——先前滑桿 100–6400、選單 400–3200、CLI 50–25600 三套並存
     private let dpiControl = NSSegmentedControl(labels: MenuBarDelegate.dpiPresets.map(String.init),
                                                 trackingMode: .selectOne, target: nil, action: nil)
     private let dpiCustom = NSTextField(string: "")
     private let rateControl = NSSegmentedControl(labels: ["125", "250", "500", "1000"], trackingMode: .selectOne, target: nil, action: nil)
-    private let rgbControl = NSSegmentedControl(labels: ["Off", "Cycle", "Breathing"], trackingMode: .selectOne, target: nil, action: nil)
-    private let replayCheck = NSButton(checkboxWithTitle: "Re-apply my settings at login", target: nil, action: nil)
-    private let startupCheck = NSButton(checkboxWithTitle: "Start Nibble at login", target: nil, action: nil)
+    private let rgbControl = NSSegmentedControl(labels: [
+        localized("common.off"), localized("common.cycle"), localized("common.breathing")
+    ], trackingMode: .selectOne, target: nil, action: nil)
+    private let replayCheck = NSButton(checkboxWithTitle: localized("settings.reapply"), target: nil, action: nil)
+    private let startupCheck = NSButton(checkboxWithTitle: localized("settings.start.login"), target: nil, action: nil)
     private let startupNote = NSTextField(labelWithString: "")
-    private let notifyCheck = NSButton(checkboxWithTitle: "Notify me below", target: nil, action: nil)
+    private let notifyCheck = NSButton(checkboxWithTitle: localized("settings.notify.below"), target: nil, action: nil)
     private let notifyField = NSTextField(string: "")
     // 健康狀態列：改鍵沒反應時的答案幾乎都在這三行裡（先前只有 CLI 的 `nibble doctor` 看得到）
-    private let imValue = NSTextField(labelWithString: "checking…")
-    private let axValue = NSTextField(labelWithString: "checking…")
-    private let engineValue = NSTextField(labelWithString: "checking…")
-    private let imFix = NSButton(title: "Open Settings…", target: nil, action: nil)
-    private let axFix = NSButton(title: "Open Settings…", target: nil, action: nil)
-    private let engineFix = NSButton(title: "Start Nibble", target: nil, action: nil)
+    private let imValue = NSTextField(labelWithString: localized("settings.checking"))
+    private let axValue = NSTextField(labelWithString: localized("settings.checking"))
+    private let engineValue = NSTextField(labelWithString: localized("settings.checking"))
+    private let imFix = NSButton(title: localized("settings.open"), target: nil, action: nil)
+    private let axFix = NSButton(title: localized("settings.open"), target: nil, action: nil)
+    private let engineFix = NSButton(title: localized("settings.start.nibble"), target: nil, action: nil)
     private let statusLabel = NSTextField(labelWithString: " ")
     private let aboutButton = NSButton(title: "GitHub", target: nil, action: nil)
-    private let saveButton = NSButton(title: "Save", target: nil, action: nil)
-    private let closeButton = NSButton(title: "Close", target: nil, action: nil)
+    private let saveButton = NSButton(title: localized("common.save"), target: nil, action: nil)
+    private let closeButton = NSButton(title: localized("settings.close"), target: nil, action: nil)
     /// Save 只屬於 Buttons 分頁；General 是即時寫入的，那裡不該擺一顆永遠灰著的按鈕
     private var onButtonsTab = false
     private var lastIndex: UInt8 = 1
@@ -133,7 +135,7 @@ final class SettingsDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate,
         rgbControl.target = self
         rgbControl.action = #selector(rgbChanged(_:))
 
-        let customCaption = NSTextField(labelWithString: "Custom")
+        let customCaption = NSTextField(labelWithString: localized("common.custom"))
         customCaption.font = .systemFont(ofSize: 11)
         customCaption.textColor = .secondaryLabelColor
         let dpiCustomRow = NSStackView(views: [customCaption, dpiCustom])
@@ -173,23 +175,23 @@ final class SettingsDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate,
         notifyRow.spacing = 6
         notifyRow.alignment = .centerY
 
-        let statusHeader = nibbleSectionRow(sectionLabel("Status"),
+        let statusHeader = nibbleSectionRow(sectionLabel(localized("settings.section.status")),
             help: "The three things every remap depends on. Input Monitoring lets Nibble read the mouse; "
                 + "Accessibility lets it synthesize your keystrokes; the engine lives in the menu bar app. "
                 + "Permissions are reported for whichever process hosts the engine — `nibble doctor` prints the same checks.")
 
         let generalStack = NSStackView(views: [
-            sectionLabel("DPI"), dpiControl, dpiCustomRow,
-            sectionLabel("Report rate (Hz)"), rateControl,
-            nibbleSectionRow(sectionLabel("Lighting"),
+            sectionLabel(localized("settings.section.dpi")), dpiControl, dpiCustomRow,
+            sectionLabel(localized("settings.section.rate")), rateControl,
+            nibbleSectionRow(sectionLabel(localized("settings.section.lighting")),
                              help: "Lighting can't be read back from the mouse — Nibble shows the last effect it applied. "
                                  + "A power cycle returns the mouse to its onboard profile."),
             rgbControl,
             NSBox(), launchRow, startupRow, notifyRow,
             NSBox(), statusHeader,
-            healthRow("Input Monitoring", imValue, imFix),
-            healthRow("Accessibility", axValue, axFix),
-            healthRow("Remap engine", engineValue, engineFix),
+            healthRow(localized("settings.health.input.monitoring"), imValue, imFix),
+            healthRow(localized("settings.health.accessibility"), axValue, axFix),
+            healthRow(localized("settings.health.engine"), engineValue, engineFix),
         ])
         generalStack.orientation = .vertical
         generalStack.alignment = .leading
@@ -200,18 +202,20 @@ final class SettingsDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate,
         tabs.delegate = self
         tabs.translatesAutoresizingMaskIntoConstraints = false
         let general = NSTabViewItem(identifier: "general")
-        general.label = "General"
+        general.label = localized("settings.general")
         general.view = Self.pane(generalStack, pinBottom: false)
         tabs.addTabViewItem(general)
 
         let buttons = NSTabViewItem(identifier: "buttons")
-        buttons.label = "Buttons"
+        buttons.label = localized("settings.buttons")
         buttons.view = buttonsPane.makeView()
         tabs.addTabViewItem(buttons)
         buttonsPane.onStatus = { [weak self] msg in self?.setStatus(msg) }
         buttonsPane.onPendingChange = { [weak self] count in
             self?.saveButton.isEnabled = count > 0
-            self?.saveButton.title = count > 0 ? "Save (\(count))" : "Save"
+            self?.saveButton.title = count > 0
+                ? localized("common.save") + " (\(count))"
+                : localized("common.save")
             self?.syncSaveButton()
         }
 
@@ -390,11 +394,11 @@ final class SettingsDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate,
     func windowShouldClose(_ sender: NSWindow) -> Bool {
         guard buttonsPane.pendingCount > 0 else { return true }
         let alert = NSAlert()
-        alert.messageText = "Save \(buttonsPane.pendingCount) button change\(buttonsPane.pendingCount == 1 ? "" : "s")?"
-        alert.informativeText = "They haven't been written to the config yet."
-        alert.addButton(withTitle: "Save")
-        alert.addButton(withTitle: "Discard")
-        alert.addButton(withTitle: "Cancel")
+        alert.messageText = String(format: localized("settings.save.pending"), buttonsPane.pendingCount)
+        alert.informativeText = localized("settings.save.pending.detail")
+        alert.addButton(withTitle: localized("common.save"))
+        alert.addButton(withTitle: localized("settings.save.discard"))
+        alert.addButton(withTitle: localized("common.cancel"))
         switch alert.runModal() {
         case .alertFirstButtonReturn: buttonsPane.commitPending(); return true
         case .alertSecondButtonReturn: buttonsPane.discardPending(); return true
@@ -422,7 +426,7 @@ final class SettingsDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate,
     private func loadState() {
         do {
             let dev = try openDevice()
-            deviceLabel.stringValue = (try? dev.name()) ?? "Logitech #\(lastIndex)"
+            deviceLabel.stringValue = (try? dev.name()) ?? String(format: "Logitech #%d", lastIndex)
             updateBattery(dev)
             do {
                 let tr = dev.transport
@@ -443,10 +447,10 @@ final class SettingsDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate,
                     + "Writing the rate requires host mode; Nibble switches automatically."
             }
             showLighting()
-            setStatus("Ready")
+            setStatus(localized("common.ready"))
         } catch {
-            deviceLabel.stringValue = "Mouse offline or asleep"
-            batteryLabel.stringValue = "Move the mouse, then reopen this panel"
+            deviceLabel.stringValue = localized("settings.device.offline")
+            batteryLabel.stringValue = localized("settings.battery.reopen")
             setStatus("❌ \(error)", sticky: true)
         }
     }
@@ -461,7 +465,8 @@ final class SettingsDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate,
     private func updateBattery(_ dev: HIDPPDevice) {
         guard let b = try? dev.battery() else { return }
         let volt = b.millivolts.map { String(format: " · %.2fV", Double($0) / 1000) } ?? ""
-        batteryLabel.stringValue = "🔋 \(b.percent)%\(volt) · \(b.charging ? "charging" : "discharging")"
+        batteryLabel.stringValue = "🔋 \(b.percent)%\(volt) · "
+            + (b.charging ? localized("common.charging") : localized("common.discharging"))
     }
 
     /// 現值若不在級距上（例如滑鼠上的 DPI 鍵調出來的），就顯示在 Custom 欄位而不是假裝選中某一格
@@ -489,7 +494,9 @@ final class SettingsDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate,
             var got = 0
             try uiHostFallback(dev) { got = try dev.setDPI(target) }
             showDPI(got)
-            statusLabel.stringValue = got == target ? "DPI → \(got) ✓" : "⚠️ asked \(target), device reports \(got)"
+            statusLabel.stringValue = got == target
+                ? String(format: localized("settings.status.dpi"), got)
+                : String(format: localized("settings.status.dpi.mismatch"), target, got)
         } catch { setStatus("❌ \(error)") }
     }
 
@@ -501,7 +508,7 @@ final class SettingsDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate,
     @objc private func dpiCustomCommitted() {
         let text = dpiCustom.stringValue.trimmingCharacters(in: .whitespaces)
         guard let v = Int(text), (50...25600).contains(v) else {
-            setStatus("⚠️ DPI must be a number between 50 and 25600")
+            setStatus(localized("settings.status.dpi.invalid"))
             return
         }
         applyDPI(v)
@@ -512,8 +519,8 @@ final class SettingsDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate,
         _ = cmdReplay([on ? "install" : "uninstall"])
         replayCheck.state = FileManager.default.fileExists(atPath: replayPlistURL.path) ? .on : .off
         statusLabel.stringValue = replayCheck.state == .on
-            ? "Settings will be re-applied at login ✓"
-            : "Login re-apply turned off"
+            ? localized("settings.saved.login")
+            : localized("settings.saved.login.off")
     }
 
     @objc private func rateChanged(_ sender: NSSegmentedControl) {
@@ -523,7 +530,9 @@ final class SettingsDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate,
             let dev = try openDevice()
             var got = 0
             try uiHostFallback(dev) { got = try dev.setReportRateHz(hz) }
-            statusLabel.stringValue = got == hz ? "Report rate → \(got) Hz ✓" : "⚠️ asked \(hz), device reports \(got)"
+            statusLabel.stringValue = got == hz
+                ? String(format: localized("settings.status.rate"), got)
+                : String(format: localized("settings.status.rate.mismatch"), hz, got)
         } catch { setStatus("❌ \(error)") }
     }
 
@@ -573,7 +582,7 @@ final class SettingsDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate,
 
     private func refreshHealth() {
         let im = inputMonitoringGranted()
-        setHealth(imValue, ok: im, im ? "granted" : "not granted — Nibble can't read the mouse")
+        setHealth(imValue, ok: im, im ? localized("common.granted") : localized("settings.health.not.granted"))
         imFix.isHidden = im
 
         let st = EngineState.read()
@@ -583,25 +592,26 @@ final class SettingsDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate,
         // 但那份狀態是「上次回報」——選單列關掉後就不再更新，而重建 bundle 會讓
         // 綁在 cdhash 上的授權失效。所以沒在跑的時候只能說不知道，不能照著舊值說 ✓。
         if running, let ax = st["axTrusted"] as? Bool {
-            setHealth(axValue, ok: ax, ax ? "granted" : "not granted — remapped buttons stay silent")
+            setHealth(axValue, ok: ax, ax ? localized("common.granted") : localized("settings.health.ax.not.granted"))
             axFix.isHidden = ax
         } else if running {
-            setHealth(axValue, ok: nil, "the menu bar hasn't reported yet")
+            setHealth(axValue, ok: nil, localized("settings.health.menu.bar.not.reported"))
             axFix.isHidden = false
         } else {
-            setHealth(axValue, ok: nil, "unknown — the menu bar isn't running to report it")
+            setHealth(axValue, ok: nil, localized("settings.health.menu.bar.unknown"))
             axFix.isHidden = false
         }
 
         let mapped = activeButtonMaps(loadConfig()).values.reduce(0) { $0 + $1.count }
         if !running {
             setHealth(engineValue, ok: mapped > 0 ? false : nil,
-                      mapped > 0 ? "menu bar not running — your \(mapped) remap\(mapped == 1 ? "" : "s") are off"
-                                 : "menu bar not running")
+                      mapped > 0
+                          ? String(format: localized("settings.health.menu.bar.remaps.off"), mapped)
+                          : localized("settings.health.menu.bar.off"))
             engineFix.isHidden = false
         } else if st["active"] as? Bool == true {
             let n = st["mappings"] as? Int ?? 0
-            setHealth(engineValue, ok: true, "running · \(n) mapping\(n == 1 ? "" : "s")")
+            setHealth(engineValue, ok: true, String(format: localized("settings.health.engine.running"), n))
             engineFix.isHidden = true
         } else {
             let reason = st["reason"] as? String ?? "menu bar has not reported yet"
@@ -624,7 +634,7 @@ final class SettingsDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate,
     @objc private func startMenuBarAction() {
         let url = URL(fileURLWithPath: "/Applications/Nibble.app")
         guard FileManager.default.fileExists(atPath: url.path) else {
-            setStatus("⚠️ /Applications/Nibble.app not found — run `make install-app`", sticky: true)
+            setStatus(localized("settings.device.notfound"), sticky: true)
             return
         }
         NSWorkspace.shared.openApplication(at: url, configuration: NSWorkspace.OpenConfiguration()) { [weak self] _, err in
@@ -633,7 +643,7 @@ final class SettingsDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate,
                 if let err {
                     self.setStatus("❌ \(err.localizedDescription)", sticky: true)
                 } else {
-                    self.setStatus("Menu bar starting…")
+                    self.setStatus(localized("settings.status.menubar.starting"))
                     self.scheduleHealthRecheck()
                 }
             }
@@ -655,9 +665,9 @@ final class SettingsDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate,
         if let failure {
             setStatus("❌ \(failure)", sticky: true)
         } else if LoginItem.needsApproval {
-            setStatus("Registered, but macOS is blocking it — enable Nibble in System Settings › General › Login Items", sticky: true)
+            setStatus(localized("settings.status.startup.blocked"), sticky: true)
         } else {
-            setStatus(LoginItem.enabled ? "Nibble will start at login ✓" : "Login item removed")
+            setStatus(LoginItem.enabled ? localized("settings.status.startup.on") : localized("settings.status.startup.removed"))
         }
     }
 
@@ -678,10 +688,11 @@ final class SettingsDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate,
             loadPreferences()   // 夾過範圍後把真正生效的值寫回欄位
             // 一次只講一句話：先前警告訊息會被下面那句成功訊息立刻蓋掉，
             // 於是輸入 99 只看得到「已設定 50%」，沒人知道自己打的值被改了
-            guard on else { setStatus("Low-battery alerts off"); return }
+            guard on else { setStatus(localized("settings.status.lowbattery.off")); return }
             setStatus(clamped
-                ? "⚠️ \(lowBatteryRange.lowerBound)–\(lowBatteryRange.upperBound)% only — using \(notifyField.stringValue)%"
-                : "Low-battery alert at \(notifyField.stringValue)% ✓")
+                ? String(format: localized("settings.status.range.only"), lowBatteryRange.lowerBound,
+                         lowBatteryRange.upperBound, notifyField.stringValue)
+                : String(format: localized("settings.status.lowbattery.at"), notifyField.stringValue))
         } catch {
             setStatus("❌ \(error)", sticky: true)
         }
@@ -695,7 +706,9 @@ final class SettingsDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate,
             let applied = try uiSetRGB(dev, kind: kind)
             lastRGB = kind
             showLighting()
-            statusLabel.stringValue = applied > 0 ? "Lighting → \(kind) ✓" : "⚠️ effect not available on this device"
+            statusLabel.stringValue = applied > 0
+                ? String(format: localized("settings.status.lighting"), kind)
+                : localized("settings.status.effect.unavailable")
         } catch { setStatus("❌ \(error)") }
     }
 

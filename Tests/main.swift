@@ -400,6 +400,13 @@ runConfigFixtures("config-merge.json")
 
 // MARK: - 選單列存活探測（跨程序判斷，靠 flock 而不是比對程序名）
 
+section("simplified Chinese localization")
+do {
+    expectEqual(localized("common.save"), "保存", "a known key resolves from the bundled zh-Hans table")
+    expectEqual(localized("nibble.locale.key.missing"), "nibble.locale.key.missing",
+                "a missing key falls back to the development string")
+}
+
 section("menu bar liveness probe")
 do {
     let tmp = URL(fileURLWithPath: NSTemporaryDirectory())
